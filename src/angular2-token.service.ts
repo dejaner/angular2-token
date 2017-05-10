@@ -1,5 +1,4 @@
 import { Injectable, Optional } from '@angular/core';
-import { ActivatedRoute, Router, CanActivate } from '@angular/router';
 import {
     Http,
     Response,
@@ -31,7 +30,7 @@ import {
 } from './angular2-token.model';
 
 @Injectable()
-export class Angular2TokenService implements CanActivate {
+export class Angular2TokenService {
 
     get currentUserType(): string {
         if (this.atCurrentUserType != null)
@@ -68,33 +67,11 @@ export class Angular2TokenService implements CanActivate {
     private atCurrentUserData: UserData;
 
     constructor(
-        private http: Http,
-        @Optional() private activatedRoute: ActivatedRoute,
-        @Optional() private router: Router
+        private http: Http
     ) { }
 
     userSignedIn(): boolean {
         return !!this.atCurrentAuthData;
-    }
-
-    canActivate(): boolean {
-        if (this.userSignedIn())
-            return true;
-        else {
-            // Store current location in storage (usefull for redirection after signing in)
-            if (this.atOptions.signInStoredUrlStorageKey) {
-                localStorage.setItem(
-                    this.atOptions.signInStoredUrlStorageKey,
-                    window.location.pathname + window.location.search
-                );
-            }
-
-            // Redirect user to sign in if signInRedirect is set
-            if(this.router && this.atOptions.signInRedirect)
-                this.router.navigate([this.atOptions.signInRedirect]);
-
-            return false;
-        }
     }
 
     // Inital configuration
@@ -223,9 +200,9 @@ export class Angular2TokenService implements CanActivate {
         }
     }
 
-    processOAuthCallback(): void {
-        this.getAuthDataFromParams();
-    }
+    // processOAuthCallback(): void {
+    //     this.getAuthDataFromParams();
+    // }
 
     // Sign out request and delete storage
     signOut(): Observable<Response> {
@@ -427,8 +404,8 @@ export class Angular2TokenService implements CanActivate {
 
         this.getAuthDataFromStorage();
 
-        if(this.activatedRoute)
-            this.getAuthDataFromParams();
+        // if(this.activatedRoute)
+        //     this.getAuthDataFromParams();
 
         if (this.atCurrentAuthData)
             this.validateToken();
@@ -477,22 +454,23 @@ export class Angular2TokenService implements CanActivate {
             this.atCurrentAuthData = authData;
     }
 
+    // TODO Refactor if needed
     // Try to get auth data from url parameters.
-    private getAuthDataFromParams(): void {
-        if(this.activatedRoute.queryParams) // Fix for Testing, needs to be removed later
-            this.activatedRoute.queryParams.subscribe(queryParams => {
-                let authData: AuthData = {
-                    accessToken:    queryParams['token'] || queryParams['auth_token'],
-                    client:         queryParams['client_id'],
-                    expiry:         queryParams['expiry'],
-                    tokenType:      'Bearer',
-                    uid:            queryParams['uid']
-                };
+    // private getAuthDataFromParams(): void {
+    //     if(this.activatedRoute.queryParams) // Fix for Testing, needs to be removed later
+    //         this.activatedRoute.queryParams.subscribe(queryParams => {
+    //             let authData: AuthData = {
+    //                 accessToken:    queryParams['token'] || queryParams['auth_token'],
+    //                 client:         queryParams['client_id'],
+    //                 expiry:         queryParams['expiry'],
+    //                 tokenType:      'Bearer',
+    //                 uid:            queryParams['uid']
+    //             };
 
-                if (this.checkAuthData(authData))
-                    this.atCurrentAuthData = authData;
-            });
-    }
+    //             if (this.checkAuthData(authData))
+    //                 this.atCurrentAuthData = authData;
+    //         });
+    // }
 
     /**
      *
